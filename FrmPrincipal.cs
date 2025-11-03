@@ -75,5 +75,10 @@ namespace checkpoint
  MessageBox.Show("Error inicializando base: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
  }
  }
- }
+
+        private void lblAlertsTitle_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
 }
