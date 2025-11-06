@@ -1,9 +1,12 @@
-using System;
+锘縰sing System;
 using System.Configuration;
+using System.Linq;
 using System.Windows.Forms;
 using Checkpoint.Core.Security;
+using System.Collections.Generic; // Necesario para List<T>
+using Checkpoint.Data.Repositories;
 
-namespace Checkpoint
+namespace checkpoint
 {
     public partial class FrmLogin : Form
     {
@@ -17,17 +20,28 @@ namespace Checkpoint
 
         private void FrmLogin_Load(object sender, EventArgs e)
         {
-            // Inicializaciones si hacen falta
+            CenterLoginBox();
+            this.SizeChanged += (s, ev) => CenterLoginBox();
+        }
+
+        private void CenterLoginBox()
+        {
+            if (panelLoginBox != null)
+            {
+                int x = (this.ClientSize.Width - panelLoginBox.Width) / 2;
+                int y = (this.ClientSize.Height - panelLoginBox.Height) / 2;
+                panelLoginBox.Location = new System.Drawing.Point(x, y);
+            }
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
             var email = txtEmail.Text.Trim();
-            var password = txtPassword.Text;
+            var password = txtPassword.Text.Trim(); // Correcci贸n de Trim
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Email y contrase馻 son obligatorios.", "Validaci髇", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Email y contrase帽a son obligatorios.", "Validaci贸n", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -39,14 +53,35 @@ namespace Checkpoint
                 return;
             }
 
-            // set session
+            // Establecer la sesi贸n
             CurrentSession.UsuarioActual = res.User;
             CurrentSession.Roles = res.Roles;
 
             this.Hide();
-            using (var main = new FrmPrincipal())
+
+            // L贸gica de Redirecci贸n
+            Form formToOpen = null;
+
+            // 馃幆 CORRECCI脫N (CS1929): Convertir a min煤sculas para comparaci贸n
+            var rolesLower = CurrentSession.Roles.Select(r => r.ToLower()).ToList();
+
+            if (rolesLower.Contains("personal de bodega"))
             {
-                main.ShowDialog(this);
+                formToOpen = new FrmBodegaDashboard();
+            }
+            else if (rolesLower.Contains("control de calidad"))
+            {
+                formToOpen = new FrmCalidadDashboard();
+            }
+            else
+            {
+                // Admin u otros roles van al principal
+                formToOpen = new FrmPrincipal();
+            }
+
+            using (formToOpen)
+            {
+                formToOpen.ShowDialog(this);
             }
 
             this.Close();
@@ -55,6 +90,53 @@ namespace Checkpoint
         private void btnCancelar_Click(object sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        // Bot贸n de depuraci贸n: mostrar hash generado y verificar contra hash almacenado
+        private void btnShowHash_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var email = txtEmail.Text.Trim();
+                var password = txtPassword.Text;
+                if (string.IsNullOrEmpty(password))
+                {
+                    MessageBox.Show("Ingrese una contrase帽a para generar/verificar.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                var generated = PasswordHasher.CreateHash(password);
+                string stored = null;
+                bool verifies = false;
+
+                if (!string.IsNullOrEmpty(email))
+                {
+                    try
+                    {
+                        var repo = new UsuarioRepository();
+                        var u = repo.GetByEmail(email);
+                        stored = u?.PasswordHash;
+                        if (!string.IsNullOrEmpty(stored))
+                        {
+                            verifies = PasswordHasher.VerifyHash(password, stored);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("No se pudo leer usuario: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
+
+                var msg = "Generated hash (for debugging):\n" + generated + "\n\n";
+                msg += "Stored hash: \n" + (stored ?? "(no user or no stored hash)") + "\n\n";
+                msg += "Verify password against stored: " + (verifies ? "OK" : "FAIL") + "\n";
+                MessageBox.Show(msg, "Hash debug", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error generando/verificando hash: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

@@ -1,34 +1,21 @@
 namespace checkpoint
 {
- partial class FrmPrincipal
- {
- /// <summary>
- /// Required designer variable.
- /// </summary>
- private System.ComponentModel.IContainer components = null;
-
- /// <summary>
- /// Clean up any resources being used.
- /// </summary>
- /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
- protected override void Dispose(bool disposing)
- {
- if (disposing && (components != null))
- {
- components.Dispose();
- }
- base.Dispose(disposing);
- }
-
- #region Windows Form Designer generated code
-
- /// <summary>
- /// Required method for Designer support - do not modify
- /// the contents of this method with the code editor.
- /// </summary>
- private void InitializeComponent()
- {
+    partial class FrmPrincipal
+    {
+        private System.ComponentModel.IContainer components = null;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+        #region Windows Form Designer generated code
+        private void InitializeComponent()
+        {
             this.panelSidebar = new System.Windows.Forms.Panel();
+            this.btnUsuarios = new System.Windows.Forms.Button(); // NUEVO BOTÓN
             this.btnLogout = new System.Windows.Forms.Button();
             this.btnSettings = new System.Windows.Forms.Button();
             this.btnReportes = new System.Windows.Forms.Button();
@@ -71,6 +58,7 @@ namespace checkpoint
             // panelSidebar
             // 
             this.panelSidebar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))), ((int)(((byte)(255)))));
+            this.panelSidebar.Controls.Add(this.btnUsuarios); // AÑADIDO
             this.panelSidebar.Controls.Add(this.btnLogout);
             this.panelSidebar.Controls.Add(this.btnSettings);
             this.panelSidebar.Controls.Add(this.btnReportes);
@@ -86,11 +74,24 @@ namespace checkpoint
             this.panelSidebar.Size = new System.Drawing.Size(300, 923);
             this.panelSidebar.TabIndex = 0;
             // 
+            // btnUsuarios (NUEVO)
+            // 
+            this.btnUsuarios.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnUsuarios.ForeColor = System.Drawing.Color.White;
+            this.btnUsuarios.Location = new System.Drawing.Point(15, 388); // Nueva posición
+            this.btnUsuarios.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnUsuarios.Name = "btnUsuarios";
+            this.btnUsuarios.Size = new System.Drawing.Size(270, 55);
+            this.btnUsuarios.TabIndex = 8; // Nuevo TabIndex
+            this.btnUsuarios.Text = "Gestionar Usuarios";
+            this.btnUsuarios.UseVisualStyleBackColor = true;
+            this.btnUsuarios.Click += new System.EventHandler(this.btnUsuarios_Click);
+            // 
             // btnLogout
             // 
             this.btnLogout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLogout.ForeColor = System.Drawing.Color.White;
-            this.btnLogout.Location = new System.Drawing.Point(15, 785);
+            this.btnLogout.Location = new System.Drawing.Point(15, 850); // Posición actualizada
             this.btnLogout.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnLogout.Name = "btnLogout";
             this.btnLogout.Size = new System.Drawing.Size(270, 55);
@@ -103,7 +104,7 @@ namespace checkpoint
             // 
             this.btnSettings.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSettings.ForeColor = System.Drawing.Color.White;
-            this.btnSettings.Location = new System.Drawing.Point(15, 708);
+            this.btnSettings.Location = new System.Drawing.Point(15, 773); // Posición actualizada
             this.btnSettings.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnSettings.Name = "btnSettings";
             this.btnSettings.Size = new System.Drawing.Size(270, 55);
@@ -236,7 +237,7 @@ namespace checkpoint
             // 
             // flowMetrics
             // 
-            this.flowMetrics.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.flowMetrics.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.flowMetrics.BackColor = System.Drawing.Color.Transparent;
             this.flowMetrics.Controls.Add(this.panelTileAlerts);
@@ -282,8 +283,8 @@ namespace checkpoint
             // 
             // tableMain
             // 
-            this.tableMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.tableMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tableMain.ColumnCount = 2;
             this.tableMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
@@ -447,36 +448,35 @@ namespace checkpoint
             this.panelQuickActions.ResumeLayout(false);
             this.ResumeLayout(false);
 
- }
-
- #endregion
-
- private System.Windows.Forms.Panel panelSidebar;
- private System.Windows.Forms.Button btnDashboard;
- private System.Windows.Forms.Button btnProductos;
- private System.Windows.Forms.Button btnLotes;
- private System.Windows.Forms.Button btnMovimientos;
- private System.Windows.Forms.Button btnSedesUbicaciones;
- private System.Windows.Forms.Button btnReportes;
- private System.Windows.Forms.Button btnSettings;
- private System.Windows.Forms.Button btnLogout;
- private System.Windows.Forms.Panel panelTop;
- private System.Windows.Forms.Label labelTitle;
- private System.Windows.Forms.PictureBox pictureBoxUser;
- private System.Windows.Forms.Panel panelContent;
- private System.Windows.Forms.FlowLayoutPanel flowMetrics;
- private System.Windows.Forms.Panel panelTileAlerts;
- private System.Windows.Forms.Label lblAlertsTitle;
- private System.Windows.Forms.Label lblAlertsValue;
- private System.Windows.Forms.TableLayoutPanel tableMain;
- private System.Windows.Forms.GroupBox groupChart;
- private System.Windows.Forms.PictureBox pictureBoxChart;
- private System.Windows.Forms.GroupBox groupRight;
- private System.Windows.Forms.FlowLayoutPanel panelQuickActions;
- private System.Windows.Forms.Button btnQuick1;
- private System.Windows.Forms.Button btnQuick2;
- private System.Windows.Forms.Button btnQuick3;
- private System.Windows.Forms.Button btnQuick4;
- private System.Windows.Forms.Button btnTestDb;
- }
+        }
+        #endregion
+        private System.Windows.Forms.Panel panelSidebar;
+        private System.Windows.Forms.Button btnDashboard;
+        private System.Windows.Forms.Button btnProductos;
+        private System.Windows.Forms.Button btnLotes;
+        private System.Windows.Forms.Button btnMovimientos;
+        private System.Windows.Forms.Button btnSedesUbicaciones;
+        private System.Windows.Forms.Button btnReportes;
+        private System.Windows.Forms.Button btnSettings;
+        private System.Windows.Forms.Button btnLogout;
+        private System.Windows.Forms.Panel panelTop;
+        private System.Windows.Forms.Label labelTitle;
+        private System.Windows.Forms.PictureBox pictureBoxUser;
+        private System.Windows.Forms.Panel panelContent;
+        private System.Windows.Forms.FlowLayoutPanel flowMetrics;
+        private System.Windows.Forms.Panel panelTileAlerts;
+        private System.Windows.Forms.Label lblAlertsTitle;
+        private System.Windows.Forms.Label lblAlertsValue;
+        private System.Windows.Forms.TableLayoutPanel tableMain;
+        private System.Windows.Forms.GroupBox groupChart;
+        private System.Windows.Forms.PictureBox pictureBoxChart;
+        private System.Windows.Forms.GroupBox groupRight;
+        private System.Windows.Forms.FlowLayoutPanel panelQuickActions;
+        private System.Windows.Forms.Button btnQuick1;
+        private System.Windows.Forms.Button btnQuick2;
+        private System.Windows.Forms.Button btnQuick3;
+        private System.Windows.Forms.Button btnQuick4;
+        private System.Windows.Forms.Button btnTestDb;
+        private System.Windows.Forms.Button btnUsuarios; // AÑADIDO
+    }
 }

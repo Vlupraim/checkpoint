@@ -1,64 +1,130 @@
-using System;
+锘縰sing System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
 using System.Windows.Forms;
+using Checkpoint.Data.Repositories; // Necesario
+using Checkpoint.Core.Security;     // Necesario
+using System.Linq;                  // 馃幆 NECESARIO (Aunque cambiaremos el m茅todo)
+using System.Collections.Generic;   // Necesario para List<T>
 
 namespace checkpoint
 {
- public partial class FrmLotes : Form
- {
- public FrmLotes()
- {
- InitializeComponent();
- this.Load += FrmLotes_Load;
- }
+    public partial class FrmLotes : Form
+    {
+        private readonly LoteRepository _repo = new LoteRepository();
+        private bool _puedeGestionarCalidad = false;
 
- private void FrmLotes_Load(object sender, EventArgs e)
- {
- LoadLotes();
- }
+        public FrmLotes()
+        {
+            InitializeComponent();
+            this.Load += FrmLotes_Load;
+        }
 
- private void btnNuevo_Click(object sender, EventArgs e)
- {
- MessageBox.Show("Implementar creaci髇 de lote.", "Info");
- }
+        private void FrmLotes_Load(object sender, EventArgs e)
+        {
+            AplicarSeguridad();
+            LoadLotes();
+        }
 
- private void btnLiberar_Click(object sender, EventArgs e)
- {
- MessageBox.Show("Implementar liberaci髇 de lote.", "Info");
- }
+        private void AplicarSeguridad()
+        {
+            var roles = CurrentSession.Roles ?? new string[0];
 
- private void btnBloquear_Click(object sender, EventArgs e)
- {
- MessageBox.Show("Implementar bloqueo de lote.", "Info");
- }
+            // 馃幆 CORRECCI脫N (CS1929):
+            // Convertimos los roles a min煤scula para una comparaci贸n simple y segura.
+            var rolesLower = roles.Select(r => r.ToLower()).ToList();
 
- private void btnRefrescar_Click(object sender, EventArgs e)
- {
- LoadLotes();
- }
+            _puedeGestionarCalidad = rolesLower.Contains("admin") ||
+                                     rolesLower.Contains("control de calidad");
 
- private void LoadLotes()
- {
- var cs = ConfigurationManager.ConnectionStrings["App"]?.ConnectionString;
- if (string.IsNullOrEmpty(cs)) { MessageBox.Show("Cadena de conexi髇 'App' no encontrada."); return; }
+            btnNuevo.Enabled = _puedeGestionarCalidad;
+            btnLiberar.Enabled = _puedeGestionarCalidad;
+            btnBloquear.Enabled = _puedeGestionarCalidad;
+        }
 
- try
- {
- using (var conn = new SqlConnection(cs))
- using (var cmd = new SqlCommand("SELECT L.Id, L.CodigoLote, L.FechaIngreso, L.FechaVencimiento, P.Nombre AS Producto, L.Estado FROM Lote L LEFT JOIN Producto P ON L.ProductoId = P.Id ORDER BY L.FechaIngreso DESC", conn))
- using (var da = new SqlDataAdapter(cmd))
- {
- var dt = new DataTable();
- da.Fill(dt);
- dgvLotes.DataSource = dt;
- }
- }
- catch (Exception ex)
- {
- MessageBox.Show("Error cargando lotes: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
- }
- }
- }
+        private void btnNuevo_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Implementar creaci贸n de lote.", "Info");
+        }
+
+        private void btnLiberar_Click(object sender, EventArgs e)
+        {
+            ActualizarEstadoSeleccionado("Liberado");
+        }
+
+        private void btnBloquear_Click(object sender, EventArgs e)
+        {
+            ActualizarEstadoSeleccionado("Bloqueado");
+        }
+
+        private void ActualizarEstadoSeleccionado(string nuevoEstado)
+        {
+            if (dgvLotes.CurrentRow == null)
+            {
+                MessageBox.Show("Por favor, seleccione un lote.", "Informaci贸n", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var loteId = (Guid)dgvLotes.CurrentRow.Cells["Id"].Value;
+            var estadoActual = dgvLotes.CurrentRow.Cells["Estado"].Value?.ToString();
+
+            if (estadoActual != null && estadoActual.Equals(nuevoEstado, StringComparison.OrdinalIgnoreCase))
+            {
+                // 馃幆 CORRECCI脫N (CS0117): Era 'Info', debe ser 'Information'.
+                MessageBox.Show($"El lote ya se encuentra en estado '{nuevoEstado}'.", "Informaci贸n", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string motivo = $"Cambio de estado a {nuevoEstado} por {CurrentSession.UsuarioActual?.Nombre ?? "Sistema"}";
+
+            if (MessageBox.Show($"驴Confirma {nuevoEstado} el lote seleccionado?", "Confirmar Acci贸n", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+            {
+                return;
+            }
+
+            try
+            {
+                _repo.ActualizarEstadoLote(loteId, nuevoEstado, motivo);
+                MessageBox.Show($"Lote {nuevoEstado} exitosamente.", "脡xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadLotes();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al actualizar el estado del lote: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnRefrescar_Click(object sender, EventArgs e)
+        {
+            LoadLotes();
+        }
+
+        private void LoadLotes()
+        {
+            try
+            {
+                // Mantenemos el SQL directo para el JOIN con Producto
+                var cs = ConfigurationManager.ConnectionStrings["App"]?.ConnectionString;
+                if (string.IsNullOrEmpty(cs)) { MessageBox.Show("Cadena de conexi贸n 'App' no encontrada."); return; }
+
+                using (var conn = new SqlConnection(cs))
+                using (var cmd = new SqlCommand("SELECT L.Id, L.CodigoLote, L.FechaIngreso, L.FechaVencimiento, P.Nombre AS Producto, L.Estado FROM Lote L LEFT JOIN Producto P ON L.ProductoId = P.Id ORDER BY L.FechaIngreso DESC", conn))
+                using (var da = new SqlDataAdapter(cmd))
+                {
+                    var dt = new DataTable();
+                    da.Fill(dt);
+                    dgvLotes.DataSource = dt;
+                    if (dt.Columns.Contains("Id"))
+                    {
+                        dgvLotes.Columns["Id"].Visible = false; // Ocultar ID
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error cargando lotes: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
 }

@@ -33,8 +33,21 @@ namespace Checkpoint.Core.Security
  var parts = storedHash.Split('.');
  if (parts.Length !=3) return false;
  if (!int.TryParse(parts[0], out int iterations)) return false;
- var salt = Convert.FromBase64String(parts[1]);
- var hash = Convert.FromBase64String(parts[2]);
+ // tolerate accidental whitespace/newlines in stored values
+ var saltB64 = parts[1]?.Trim();
+ var hashB64 = parts[2]?.Trim();
+ byte[] salt;
+ byte[] hash;
+ try
+ {
+ salt = Convert.FromBase64String(saltB64);
+ hash = Convert.FromBase64String(hashB64);
+ }
+ catch (FormatException)
+ {
+ // stored value not a valid base64 -> treat as invalid credentials
+ return false;
+ }
  using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations))
  {
  var computed = pbkdf2.GetBytes(hash.Length);

@@ -49,11 +49,13 @@
     <Compile Include="Checkpoint.Core\Entities\Lote.cs" />
     <Compile Include="Checkpoint.Core\Entities\Movimiento.cs" />
     <Compile Include="Checkpoint.Core\Entities\Producto.cs" />
+    <Compile Include="Checkpoint.Core\Entities\Rol.cs" />
     <Compile Include="Checkpoint.Core\Entities\Sede.cs" />
     <Compile Include="Checkpoint.Core\Entities\Stock.cs" />
     <Compile Include="Checkpoint.Core\Entities\Ubicacion.cs" />
     <Compile Include="Checkpoint.Core\Entities\Usuario.cs" />
     <Compile Include="Checkpoint.Core\Security\AuthenticationService.cs" />
+    <Compile Include="Checkpoint.Core\Security\CurrentSession.cs" />
     <Compile Include="Checkpoint.Core\Security\PasswordHasher.cs" />
     <Compile Include="Checkpoint.Data\DatabaseInitializer.cs" />
     <Compile Include="Checkpoint.Data\Repositories\LoteRepository.cs" />
@@ -64,7 +66,42 @@
     <Compile Include="Checkpoint.Data\Repositories\UbicacionRepository.cs" />
     <Compile Include="Checkpoint.Data\Repositories\UsuarioRepository.cs" />
     <Compile Include="ConfigurationManagerShim.cs" />
-    <Compile Include="FrmLogin.Designer.cs" />
+    <Compile Include="FrmBodegaDashboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmBodegaDashboard.Designer.cs">
+      <DependentUpon>FrmBodegaDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmCalidadDashboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmCalidadDashboard.Designer.cs">
+      <DependentUpon>FrmCalidadDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmDetalleProducto.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmDetalleProducto.Designer.cs">
+      <DependentUpon>FrmDetalleProducto.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmDetalleUsuario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmDetalleUsuario.Designer.cs">
+      <DependentUpon>FrmDetalleUsuario.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmGestionUsuarios.Designer.cs">
+      <DependentUpon>FrmGestionUsuarios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmLogin.Designer.cs">
+      <DependentUpon>FrmLogin.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmLotes.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -104,6 +141,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Session\CurrentSession.cs" />
+    <Compile Include="tools\HashGen\Program.cs" />
     <EmbeddedResource Include="FrmPrincipal.resx">
       <DependentUpon>FrmPrincipal.cs</DependentUpon>
     </EmbeddedResource>
@@ -125,6 +163,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="tools\HashGen\HashGen.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

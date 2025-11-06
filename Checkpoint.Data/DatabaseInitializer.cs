@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Checkpoint.Core.Security;
 
 namespace Checkpoint.Data
 {
@@ -47,6 +48,7 @@ namespace Checkpoint.Data
  catch (Exception ex)
  {
  // no bloquear la app, solo log
+ Console.WriteLine("No se pudo crear la base: " + ex.Message);
  TryWriteLog("No se pudo crear la base: " + ex.Message + "\n" + ex.StackTrace);
  }
  }
@@ -55,8 +57,72 @@ namespace Checkpoint.Data
  ExecuteSqlResourceOrFile("Checkpoint.Data.Scripts.schema.sql", new[] { "Checkpoint.Data", "Scripts", "schema.sql" }, csApp);
  ExecuteSqlResourceOrFile("Checkpoint.Data.Scripts.seed.sql", new[] { "Checkpoint.Data", "Scripts", "seed.sql" }, csApp);
 
+ // After seed, ensure admin password hash matches expected (useful in dev)
+ try
+ {
+ EnsureAdminPassword(csApp);
+ }
+ catch (Exception ex)
+ {
+ TryWriteLog("EnsureAdminPassword error: " + ex.Message + "\n" + ex.StackTrace);
+ }
+
  // Informar al desarrollador
+ Console.WriteLine("DatabaseInitializer: ejecución completada.");
  TryWriteLog("DatabaseInitializer: ejecución completada.\n");
+ }
+
+ private static void EnsureAdminPassword(string connectionString)
+ {
+ if (string.IsNullOrEmpty(connectionString)) return;
+ try
+ {
+ using (var conn = new SqlConnection(connectionString))
+ using (var cmd = new SqlCommand("SELECT Id, PasswordHash FROM [Usuario] WHERE Email = @email", conn))
+ {
+ cmd.Parameters.AddWithValue("@email", "admin@local");
+ conn.Open();
+ using (var rdr = cmd.ExecuteReader())
+ {
+ if (rdr.Read())
+ {
+ var id = rdr.GetGuid(0);
+ var stored = rdr.IsDBNull(1) ? null : rdr.GetString(1);
+ // If stored is empty or doesn't verify for 'admin', update it to a fresh hash for password 'admin'
+ var ok = false;
+ if (!string.IsNullOrEmpty(stored))
+ {
+ try { ok = PasswordHasher.VerifyHash("admin", stored); } catch { ok = false; }
+ }
+ if (!ok)
+ {
+ var newHash = PasswordHasher.CreateHash("admin");
+ TryWriteLog("Updating admin password hash to a new generated value.");
+ rdr.Close();
+ using (var upd = new SqlCommand("UPDATE [Usuario] SET PasswordHash = @ph WHERE Id = @id", conn))
+ {
+ upd.Parameters.AddWithValue("@ph", newHash);
+ upd.Parameters.AddWithValue("@id", id);
+ upd.ExecuteNonQuery();
+ }
+ TryWriteLog("Admin password hash updated.");
+ }
+ else
+ {
+ TryWriteLog("Admin password hash already valid.");
+ }
+ }
+ else
+ {
+ TryWriteLog("Admin user not found (email=admin@local).");
+ }
+ }
+ }
+ }
+ catch (Exception ex)
+ {
+ TryWriteLog("EnsureAdminPassword exception: " + ex.Message + "\n" + ex.StackTrace);
+ }
  }
 
  private static void ExecuteSqlResourceOrFile(string resourceName, string[] relativePathParts, string connectionString)
@@ -73,6 +139,7 @@ namespace Checkpoint.Data
  var sql = reader.ReadToEnd();
  TryWriteLog($"Found embedded resource: {resourceName}, executing...");
  ExecuteSqlScript(sql, connectionString);
+ Console.WriteLine($"DatabaseInitializer: ejecutado recurso embebido {resourceName}.");
  TryWriteLog($"DatabaseInitializer: ejecutado recurso embebido {resourceName}.");
  return;
  }
@@ -88,14 +155,17 @@ namespace Checkpoint.Data
  TryWriteLog($"Found script file at: {file}");
  var sql = File.ReadAllText(file);
  ExecuteSqlScript(sql, connectionString);
+ Console.WriteLine($"DatabaseInitializer: ejecutado script desde archivo {file}.");
  TryWriteLog($"DatabaseInitializer: ejecutado script desde archivo {file}.");
  return;
  }
 
+ Console.WriteLine($"DatabaseInitializer: no se encontró ni recurso ni archivo para {resourceName} (buscado '{relPath}').");
  TryWriteLog($"DatabaseInitializer: no se encontró ni recurso ni archivo para {resourceName} (buscado '{relPath}').");
  }
  catch (Exception ex)
  {
+ Console.WriteLine($"DatabaseInitializer: error ejecutando {resourceName}: {ex.Message}");
  TryWriteLog($"DatabaseInitializer: error ejecutando {resourceName}: {ex.Message}\n{ex.StackTrace}");
  }
  }
@@ -118,6 +188,7 @@ namespace Checkpoint.Data
  }
  catch (Exception ex)
  {
+ // ignore
  TryWriteLog("FindFileInParents error: " + ex.Message);
  }
  return null;
@@ -154,6 +225,7 @@ namespace Checkpoint.Data
  {
  // Log and rethrow with context so caller sees useful message
  var message = $"Error ejecutando batch de SQL: {ex.Message}\nBatch:\n{(trimmed.Length >400 ? trimmed.Substring(0,400) + "..." : trimmed)}";
+ Console.WriteLine(message);
  TryWriteLog(message + "\n" + ex.StackTrace);
  throw new InvalidOperationException(message, ex);
  }
