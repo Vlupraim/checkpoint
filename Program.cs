@@ -1,17 +1,23 @@
-﻿using System;
+﻿using Checkpoint.Data;
+using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace checkpoint
 {
     internal static class Program
     {
-        /// <summary>
-        /// Punto de entrada principal para la aplicación.
-        /// </summary>
         [STAThread]
         static void Main()
         {
-            Checkpoint.Data.DatabaseInitializer.EnsureDatabase();
+            // ejecuta solo si no existe el log de inicialización
+            var dbInitFlag = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dbinit.done");
+            if (!File.Exists(dbInitFlag))
+            {
+                DatabaseInitializer.EnsureDatabase();
+                File.WriteAllText(dbInitFlag, "initialized");
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FrmLogin());

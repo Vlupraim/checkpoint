@@ -6,6 +6,8 @@
         private System.Windows.Forms.DataGridView dgvUsuarios;
         private System.Windows.Forms.Button btnNuevo;
         private System.Windows.Forms.Button btnEditar;
+        private System.Windows.Forms.Button btnEliminar;     // <-- NUEVO
+        private System.Windows.Forms.Button btnDesactivar;  // <-- NUEVO
         private System.Windows.Forms.Button btnRefrescar;
 
         protected override void Dispose(bool disposing)
@@ -20,6 +22,8 @@
             this.dgvUsuarios = new System.Windows.Forms.DataGridView();
             this.btnNuevo = new System.Windows.Forms.Button();
             this.btnEditar = new System.Windows.Forms.Button();
+            this.btnEliminar = new System.Windows.Forms.Button();     // <-- NUEVO
+            this.btnDesactivar = new System.Windows.Forms.Button();  // <-- NUEVO
             this.btnRefrescar = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).BeginInit();
             this.SuspendLayout();
@@ -64,13 +68,35 @@
             this.btnEditar.UseVisualStyleBackColor = true;
             this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
             // 
+            // btnEliminar  <-- NUEVO
+            // 
+            this.btnEliminar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnEliminar.Location = new System.Drawing.Point(242, 380);
+            this.btnEliminar.Name = "btnEliminar";
+            this.btnEliminar.Size = new System.Drawing.Size(110, 30);
+            this.btnEliminar.TabIndex = 3;
+            this.btnEliminar.Text = "Eliminar";
+            this.btnEliminar.UseVisualStyleBackColor = true;
+            this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
+            // 
+            // btnDesactivar  <-- NUEVO
+            // 
+            this.btnDesactivar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnDesactivar.Location = new System.Drawing.Point(362, 380);
+            this.btnDesactivar.Name = "btnDesactivar";
+            this.btnDesactivar.Size = new System.Drawing.Size(120, 30);
+            this.btnDesactivar.TabIndex = 4;
+            this.btnDesactivar.Text = "Estado";
+            this.btnDesactivar.UseVisualStyleBackColor = true;
+            this.btnDesactivar.Click += new System.EventHandler(this.btnDesactivar_Click);
+            // 
             // btnRefrescar
             // 
             this.btnRefrescar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRefrescar.Location = new System.Drawing.Point(672, 380);
             this.btnRefrescar.Name = "btnRefrescar";
             this.btnRefrescar.Size = new System.Drawing.Size(100, 30);
-            this.btnRefrescar.TabIndex = 4;
+            this.btnRefrescar.TabIndex = 5;
             this.btnRefrescar.Text = "Refrescar";
             this.btnRefrescar.UseVisualStyleBackColor = true;
             this.btnRefrescar.Click += new System.EventHandler(this.btnRefrescar_Click);
@@ -83,6 +109,8 @@
             this.Controls.Add(this.dgvUsuarios);
             this.Controls.Add(this.btnNuevo);
             this.Controls.Add(this.btnEditar);
+            this.Controls.Add(this.btnEliminar);     // <-- NUEVO
+            this.Controls.Add(this.btnDesactivar);  // <-- NUEVO
             this.Controls.Add(this.btnRefrescar);
             this.Name = "FrmGestionUsuarios";
             this.Text = "Gestión de Usuarios y Roles";

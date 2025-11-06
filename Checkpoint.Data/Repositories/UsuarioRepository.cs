@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using Checkpoint.Core.Entities;
@@ -40,7 +40,6 @@ namespace Checkpoint.Data.Repositories
             return null;
         }
 
-        // NUEVO: Obtener un usuario por ID
         public Usuario GetById(Guid id)
         {
             using (var conn = new SqlConnection(_cs))
@@ -66,7 +65,6 @@ namespace Checkpoint.Data.Repositories
             return null;
         }
 
-        // NUEVO: Listar todos los usuarios
         public IEnumerable<Usuario> GetAll()
         {
             var list = new List<Usuario>();
@@ -107,7 +105,6 @@ namespace Checkpoint.Data.Repositories
             return list;
         }
 
-        // NUEVO: Obtener los IDs de los roles de un usuario
         public IEnumerable<Guid> GetRoleIds(Guid usuarioId)
         {
             var list = new List<Guid>();
@@ -124,9 +121,27 @@ namespace Checkpoint.Data.Repositories
             return list;
         }
 
-        // NUEVO: Insertar usuario y roles (Transaccional)
+        public bool ExistsEmail(string email, Guid? excludeId = null)
+        {
+            using (var conn = new SqlConnection(_cs))
+            using (var cmd = new SqlCommand(
+                excludeId.HasValue
+                    ? "SELECT 1 FROM [Usuario] WHERE Email=@Email AND Id<>@Id"
+                    : "SELECT 1 FROM [Usuario] WHERE Email=@Email", conn))
+            {
+                cmd.Parameters.AddWithValue("@Email", email);
+                if (excludeId.HasValue) cmd.Parameters.AddWithValue("@Id", excludeId.Value);
+                conn.Open();
+                var o = cmd.ExecuteScalar();
+                return o != null;
+            }
+        }
+
         public void Insert(Usuario u, List<Guid> roles)
         {
+            if (u == null) throw new ArgumentNullException(nameof(u));
+            if (u.Id == Guid.Empty) u.Id = Guid.NewGuid();
+
             using (var conn = new SqlConnection(_cs))
             {
                 conn.Open();
@@ -134,30 +149,126 @@ namespace Checkpoint.Data.Repositories
                 {
                     try
                     {
-                        // Insertar Usuario
-                        using (var cmd = new SqlCommand(@"INSERT INTO [Usuario] (Id, Nombre, Email, PasswordHash, Activo) 
-                                                        VALUES (@Id, @Nombre, @Email, @PasswordHash, @Activo)", conn, tran))
+                        using (var cmd = new SqlCommand(
+                            @"INSERT INTO [Usuario] (Id, Nombre, Email, PasswordHash, Activo) 
+                              VALUES (@Id, @Nombre, @Email, @PasswordHash, @Activo)", conn, tran))
                         {
                             cmd.Parameters.AddWithValue("@Id", u.Id);
                             cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
                             cmd.Parameters.AddWithValue("@Email", u.Email);
-                            cmd.Parameters.AddWithValue("@PasswordHash", u.PasswordHash);
+                            cmd.Parameters.AddWithValue("@PasswordHash", (object)u.PasswordHash ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@Activo", u.Activo);
                             cmd.ExecuteNonQuery();
                         }
 
-                        // Insertar Roles
-                        foreach (var rolId in roles)
+                        if (roles != null)
                         {
-                            using (var cmd = new SqlCommand(@"INSERT INTO [UserRole] (UsuarioId, RolId, AsignadoEn, AsignadoPorUsuarioId) 
-                                                            VALUES (@UsuarioId, @RolId, @AsignadoEn, @AsignadoPorUsuarioId)", conn, tran))
+                            foreach (var rolId in roles)
                             {
-                                cmd.Parameters.AddWithValue("@UsuarioId", u.Id);
-                                cmd.Parameters.AddWithValue("@RolId", rolId);
-                                cmd.Parameters.AddWithValue("@AsignadoEn", DateTime.Now);
-                                cmd.Parameters.AddWithValue("@AsignadoPorUsuarioId", (object)Core.Security.CurrentSession.UsuarioActual?.Id ?? DBNull.Value); // Auditor�a
-                                cmd.ExecuteNonQuery();
+                                using (var cmd = new SqlCommand(
+                                    @"INSERT INTO [UserRole] (UsuarioId, RolId, AsignadoEn, AsignadoPorUsuarioId) 
+                                      VALUES (@UsuarioId, @RolId, GETDATE(), @AsignadoPor)", conn, tran))
+                                {
+                                    cmd.Parameters.AddWithValue("@UsuarioId", u.Id);
+                                    cmd.Parameters.AddWithValue("@RolId", rolId);
+                                    cmd.Parameters.AddWithValue("@AsignadoPor",
+                                        (object)Core.Security.CurrentSession.UsuarioActual?.Id ?? DBNull.Value);
+                                    cmd.ExecuteNonQuery();
+                                }
                             }
+                        }
+
+                        tran.Commit();
+                    }
+                    catch
+                    {
+                        tran.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public void Update(Usuario u, List<Guid> roles)
+        {
+            if (u == null) throw new ArgumentNullException(nameof(u));
+
+            using (var conn = new SqlConnection(_cs))
+            {
+                conn.Open();
+                using (var tran = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new SqlCommand(
+                            @"UPDATE [Usuario] 
+                              SET Nombre=@Nombre, Email=@Email, PasswordHash=@PasswordHash, Activo=@Activo 
+                              WHERE Id=@Id", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@Id", u.Id);
+                            cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
+                            cmd.Parameters.AddWithValue("@Email", u.Email);
+                            cmd.Parameters.AddWithValue("@PasswordHash", (object)u.PasswordHash ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Activo", u.Activo);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        using (var cmd = new SqlCommand(
+                            "DELETE FROM [UserRole] WHERE UsuarioId=@UsuarioId", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@UsuarioId", u.Id);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        if (roles != null)
+                        {
+                            foreach (var rolId in roles)
+                            {
+                                using (var cmd = new SqlCommand(
+                                    @"INSERT INTO [UserRole] (UsuarioId, RolId, AsignadoEn, AsignadoPorUsuarioId) 
+                                      VALUES (@UsuarioId, @RolId, GETDATE(), @AsignadoPor)", conn, tran))
+                                {
+                                    cmd.Parameters.AddWithValue("@UsuarioId", u.Id);
+                                    cmd.Parameters.AddWithValue("@RolId", rolId);
+                                    cmd.Parameters.AddWithValue("@AsignadoPor",
+                                        (object)Core.Security.CurrentSession.UsuarioActual?.Id ?? DBNull.Value);
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                        }
+
+                        tran.Commit();
+                    }
+                    catch
+                    {
+                        tran.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+        // 🔴 Eliminación dura (borra roles y luego usuario)
+        public void Delete(Guid usuarioId)
+        {
+            if (usuarioId == Guid.Empty) throw new ArgumentException("Id inválido.", nameof(usuarioId));
+            using (var conn = new SqlConnection(_cs))
+            {
+                conn.Open();
+                using (var tran = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new SqlCommand("DELETE FROM [UserRole] WHERE UsuarioId=@Id", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@Id", usuarioId);
+                            cmd.ExecuteNonQuery();
+                        }
+                        using (var cmd = new SqlCommand("DELETE FROM [Usuario] WHERE Id=@Id", conn, tran))
+                        {
+                            cmd.Parameters.AddWithValue("@Id", usuarioId);
+                            var rows = cmd.ExecuteNonQuery();
+                            if (rows == 0) throw new InvalidOperationException("Usuario no encontrado.");
                         }
                         tran.Commit();
                     }
@@ -170,57 +281,17 @@ namespace Checkpoint.Data.Repositories
             }
         }
 
-        // NUEVO: Actualizar usuario y roles (Transaccional)
-        public void Update(Usuario u, List<Guid> roles)
+        // 🟡 Soft delete (desactivar)
+        public void SetActivo(Guid usuarioId, bool activo)
         {
+            if (usuarioId == Guid.Empty) throw new ArgumentException("Id inválido.", nameof(usuarioId));
             using (var conn = new SqlConnection(_cs))
+            using (var cmd = new SqlCommand("UPDATE [Usuario] SET Activo=@Activo WHERE Id=@Id", conn))
             {
+                cmd.Parameters.AddWithValue("@Id", usuarioId);
+                cmd.Parameters.AddWithValue("@Activo", activo);
                 conn.Open();
-                using (var tran = conn.BeginTransaction())
-                {
-                    try
-                    {
-                        // Actualizar Usuario (incluyendo hash si se cambi�)
-                        using (var cmd = new SqlCommand(@"UPDATE [Usuario] SET Nombre = @Nombre, Email = @Email, 
-                                                        PasswordHash = @PasswordHash, Activo = @Activo 
-                                                        WHERE Id = @Id", conn, tran))
-                        {
-                            cmd.Parameters.AddWithValue("@Id", u.Id);
-                            cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
-                            cmd.Parameters.AddWithValue("@Email", u.Email);
-                            cmd.Parameters.AddWithValue("@PasswordHash", u.PasswordHash);
-                            cmd.Parameters.AddWithValue("@Activo", u.Activo);
-                            cmd.ExecuteNonQuery();
-                        }
-
-                        // Borrar roles antiguos
-                        using (var cmd = new SqlCommand("DELETE FROM [UserRole] WHERE UsuarioId = @UsuarioId", conn, tran))
-                        {
-                            cmd.Parameters.AddWithValue("@UsuarioId", u.Id);
-                            cmd.ExecuteNonQuery();
-                        }
-
-                        // Insertar roles nuevos
-                        foreach (var rolId in roles)
-                        {
-                            using (var cmd = new SqlCommand(@"INSERT INTO [UserRole] (UsuarioId, RolId, AsignadoEn, AsignadoPorUsuarioId) 
-                                                            VALUES (@UsuarioId, @RolId, @AsignadoEn, @AsignadoPorUsuarioId)", conn, tran))
-                            {
-                                cmd.Parameters.AddWithValue("@UsuarioId", u.Id);
-                                cmd.Parameters.AddWithValue("@RolId", rolId);
-                                cmd.Parameters.AddWithValue("@AsignadoEn", DateTime.Now);
-                                cmd.Parameters.AddWithValue("@AsignadoPorUsuarioId", (object)Core.Security.CurrentSession.UsuarioActual?.Id ?? DBNull.Value); // Auditor�a
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
-                        tran.Commit();
-                    }
-                    catch
-                    {
-                        tran.Rollback();
-                        throw;
-                    }
-                }
+                cmd.ExecuteNonQuery();
             }
         }
     }
