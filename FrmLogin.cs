@@ -6,6 +6,9 @@ using Checkpoint.Core.Security;
 using System.Collections.Generic; // Necesario para List<T>
 using Checkpoint.Data.Repositories;
 
+// Alias explícito para evitar conflictos con otros PasswordHasher
+using Hasher = Checkpoint.Core.Security.PasswordHasher;
+
 namespace checkpoint
 {
     public partial class FrmLogin : Form
@@ -62,7 +65,7 @@ namespace checkpoint
             // Lógica de Redirección
             Form formToOpen = null;
 
-            // 🎯 CORRECCIÓN (CS1929): Convertir a minúsculas para comparación
+            // 🎯 Convertir a minúsculas para comparación
             var rolesLower = CurrentSession.Roles.Select(r => r.ToLower()).ToList();
 
             if (rolesLower.Contains("personal de bodega"))
@@ -105,7 +108,8 @@ namespace checkpoint
                     return;
                 }
 
-                var generated = PasswordHasher.CreateHash(password);
+                // ✅ Usamos alias Hasher (Checkpoint.Core.Security.PasswordHasher)
+                var generated = Hasher.CreateHash(password);
                 string stored = null;
                 bool verifies = false;
 
@@ -118,7 +122,7 @@ namespace checkpoint
                         stored = u?.PasswordHash;
                         if (!string.IsNullOrEmpty(stored))
                         {
-                            verifies = PasswordHasher.VerifyHash(password, stored);
+                            verifies = Hasher.VerifyHash(password, stored);
                         }
                     }
                     catch (Exception ex)

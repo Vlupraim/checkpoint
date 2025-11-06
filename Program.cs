@@ -11,11 +11,9 @@ namespace checkpoint
         [STAThread]
         static void Main()
         {
+            Checkpoint.Data.DatabaseInitializer.EnsureDatabase();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            // Inicia directamente con el Login, asumiendo que la BD 
-            // ha sido creada manualmente por el desarrollador.
             Application.Run(new FrmLogin());
         }
     }

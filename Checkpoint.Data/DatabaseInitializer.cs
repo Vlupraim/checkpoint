@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Checkpoint.Core.Security;
+using Hasher = Checkpoint.Core.Security.PasswordHasher;
 
 namespace Checkpoint.Data
 {
@@ -92,7 +93,7 @@ namespace Checkpoint.Data
  var ok = false;
  if (!string.IsNullOrEmpty(stored))
  {
- try { ok = PasswordHasher.VerifyHash("admin", stored); } catch { ok = false; }
+ try { var newHash = PasswordHasher.CreateHash("admin"); } catch { ok = false; }
  }
  if (!ok)
  {
