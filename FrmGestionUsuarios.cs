@@ -5,7 +5,7 @@ using Checkpoint.Core.Security;
 
 namespace checkpoint
 {
-    public partial class FrmGestionUsuarios : Form
+    public partial class FrmGestionUsuarios : BaseForm
     {
         private readonly UsuarioRepository _repo = new UsuarioRepository();
 

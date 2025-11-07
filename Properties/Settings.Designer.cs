@@ -26,5 +26,20 @@ namespace checkpoint.Properties
                 return defaultInstance;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsLightTheme
+        {
+            get
+            {
+                return ((bool)(this["IsLightTheme"]));
+            }
+            set
+            {
+                this["IsLightTheme"] = value;
+            }
+        }
     }
 }

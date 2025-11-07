@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace checkpoint
 {
- public partial class FrmReportes : Form
+ public partial class FrmReportes : BaseForm
  {
  public FrmReportes()
  {

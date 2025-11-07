@@ -4,7 +4,7 @@ using System.Windows.Forms;
 namespace checkpoint
 {
     // Asegúrate de que este formulario exista en tu proyecto.
-    public partial class FrmCalidadDashboard : Form
+    public partial class FrmCalidadDashboard : BaseForm
     {
         public FrmCalidadDashboard()
         {

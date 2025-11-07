@@ -10,7 +10,7 @@ using System.Collections.Generic;   // Necesario para List<T>
 
 namespace checkpoint
 {
-    public partial class FrmLotes : Form
+    public partial class FrmLotes : BaseForm
     {
         private readonly LoteRepository _repo = new LoteRepository();
         private bool _puedeGestionarCalidad = false;

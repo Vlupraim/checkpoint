@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace checkpoint
 {
- public partial class FrmMovimientos : Form
+ public partial class FrmMovimientos : BaseForm
  {
  public FrmMovimientos()
  {

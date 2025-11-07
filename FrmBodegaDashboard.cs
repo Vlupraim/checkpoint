@@ -7,7 +7,7 @@ using Checkpoint.Data.Repositories;
 
 namespace checkpoint
 {
-    public partial class FrmBodegaDashboard : Form
+    public partial class FrmBodegaDashboard : BaseForm
     {
         // Repos
         private readonly ProductoRepository _prodRepo = new ProductoRepository();

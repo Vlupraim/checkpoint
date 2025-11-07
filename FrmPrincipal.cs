@@ -4,17 +4,11 @@ using Checkpoint.Data;
 
 namespace checkpoint
 {
-    public partial class FrmPrincipal : Form
+    public partial class FrmPrincipal : BaseForm
     {
         public FrmPrincipal()
         {
             InitializeComponent();
-            this.Load += FrmPrincipal_Load;
-        }
-
-        private void FrmPrincipal_Load(object sender, EventArgs e)
-        {
-            // Inicialización de la pantalla principal
         }
 
         private void btnProductos_Click(object sender, EventArgs e)
