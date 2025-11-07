@@ -9,6 +9,16 @@ namespace checkpoint
         public FrmPrincipal()
         {
             InitializeComponent();
+            this.Load += FrmPrincipal_Load;
+        }
+
+        private void FrmPrincipal_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                chkLightTheme.Checked = checkpoint.Properties.Settings.Default.IsLightTheme;
+            }
+            catch { }
         }
 
         private void btnProductos_Click(object sender, EventArgs e)
@@ -82,6 +92,17 @@ namespace checkpoint
         private void lblAlertsTitle_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void chkLightTheme_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (chkLightTheme.Checked) this.UseLightTheme(); else this.UseDarkTheme();
+                checkpoint.Properties.Settings.Default.IsLightTheme = chkLightTheme.Checked;
+                checkpoint.Properties.Settings.Default.Save();
+            }
+            catch { }
         }
     }
 }

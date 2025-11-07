@@ -25,6 +25,7 @@ namespace checkpoint
             this.btnProductos = new System.Windows.Forms.Button();
             this.btnDashboard = new System.Windows.Forms.Button();
             this.panelTop = new System.Windows.Forms.Panel();
+            this.chkLightTheme = new System.Windows.Forms.CheckBox(); // THEME TOGGLE
             this.labelTitle = new System.Windows.Forms.Label();
             this.pictureBoxUser = new System.Windows.Forms.PictureBox();
             this.panelContent = new System.Windows.Forms.Panel();
@@ -192,6 +193,7 @@ namespace checkpoint
             // panelTop
             // 
             this.panelTop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(14)))), ((int)(((byte)(104)))), ((int)(((byte)(206)))));
+            this.panelTop.Controls.Add(this.chkLightTheme);
             this.panelTop.Controls.Add(this.labelTitle);
             this.panelTop.Controls.Add(this.pictureBoxUser);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
@@ -200,6 +202,18 @@ namespace checkpoint
             this.panelTop.Name = "panelTop";
             this.panelTop.Size = new System.Drawing.Size(1350, 92);
             this.panelTop.TabIndex = 1;
+            // 
+            // chkLightTheme
+            // 
+            this.chkLightTheme.AutoSize = true;
+            this.chkLightTheme.ForeColor = System.Drawing.Color.White;
+            this.chkLightTheme.Location = new System.Drawing.Point(1120, 34);
+            this.chkLightTheme.Name = "chkLightTheme";
+            this.chkLightTheme.Size = new System.Drawing.Size(120, 24);
+            this.chkLightTheme.TabIndex = 2;
+            this.chkLightTheme.Text = "Modo claro";
+            this.chkLightTheme.UseVisualStyleBackColor = true;
+            this.chkLightTheme.CheckedChanged += new System.EventHandler(this.chkLightTheme_CheckedChanged);
             // 
             // labelTitle
             // 
@@ -478,5 +492,6 @@ namespace checkpoint
         private System.Windows.Forms.Button btnQuick4;
         private System.Windows.Forms.Button btnTestDb;
         private System.Windows.Forms.Button btnUsuarios; // AÑADIDO
+        private System.Windows.Forms.CheckBox chkLightTheme; // THEME TOGGLE
     }
 }
